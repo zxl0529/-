@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .box {
+            margin: 0 auto;
+            display: block;
+            background: #eee;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas class="box" width="300" height="300"></canvas>
+    <script src="shadow.js"></script>
+    <script>
+        var box = document.querySelector('.box'),
+            ctx = box.getContext('2d');
+        var deg = Math.PI / 180;
+        //移动画布原点
+        ctx.translate(150, 150);
+
+        //刻度线
+        function draw() {
+            for (var i = 0; i < 60; i++) {
+                ctx.save();
+                ctx.rotate(i * 6 * deg);
+                ctx.beginPath();
+                ctx.moveTo(130, 0);
+                if (i % 5 === 0) {
+                    ctx.lineTo(115, 0);
+                    ctx.strokeStyle = "red";
+                } else {
+                    ctx.lineTo(120, 0);
+                    ctx.strokeStyle = "#000";
+                }
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            };
+            //表框
+            ctx.beginPath();
+            ctx.arc(0, 0, 140, 0, 360 * deg, false);
+            ctx.lineWidth = 20;
+            shadow.set(ctx, 5, 5, "rgba(0,0,0,.5)", 3);
+            var color = ctx.createLinearGradient(-150, -150, 150, 150);
+            color.addColorStop(0, "rgba(0,0,0,.6)");
+            color.addColorStop(1, "rgba(0,0,0,1)");
+            ctx.strokeStyle = color;
+            ctx.stroke();
+
+            //文字
+            shadow.cancel(ctx);
+            var text = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];
+            text.map(function(v, i) {
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                var r = i * 30 * deg;
+                var x = Math.cos(r) * 105;
+                var y = Math.sin(r) * 105;
+                ctx.fillText(v, x, y);
+            });
+        };
+
+        function line(obj) {
+            ctx.save();
+            ctx.rotate(obj.radius * deg);
+            ctx.beginPath();
+            ctx.lineWidth = obj.widht;
+            ctx.moveTo(obj.start[0], obj.start[1]);
+            ctx.lineTo(obj.end[0], obj.end[1]);
+            ctx.strokeStyle = obj.color;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function getTime() {
+            ctx.clearRect(-150, -150, 300, 300);
+            draw();
+            //当前时间
+            var time = new Date(),
+                h = time.getHours() % 12,
+                f = time.getMinutes(),
+                s = time.getSeconds();
+            // console.log(h, f, s);
+            //绘制表针
+
+            //秒针
+            line({
+                start: [0, 10],
+                end: [0, -90],
+                color: "red",
+                widht: 1,
+                radius: s * 6
+            });
+
+            //分针
+            line({
+                start: [0, 10],
+                end: [0, -80],
+                color: "#333",
+                widht: 2,
+                radius: f * 6 + s / 60 * 6
+            });
+
+            //时针
+            line({
+                start: [0, 0],
+                end: [0, -60],
+                color: "#000",
+                widht: 4,
+                radius: h * 30 + f / 60 * 30 + s / 3600 * 30 * 6
+            });
+            //中心
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, 360 * deg);
+            ctx.fill();
+        };
+        getTime();
+        setInterval(getTime, 1000);
+    </script>
+</body>
+
+</html>
